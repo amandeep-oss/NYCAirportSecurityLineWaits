@@ -39,6 +39,9 @@ android {
     }
     flavorDimensions += "tier"
     productFlavors {
+        create("full") {
+            dimension = "tier"
+        }
         create("slim") {
             dimension = "tier"
         }
