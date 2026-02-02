@@ -130,6 +130,50 @@ licensee {
     }
 }
 
+// Termux-specific: Work around optimizeFullReleaseResources not emitting an .ap_ on some Termux setups.
+val enableAapt2OptimizeFix = providers.gradleProperty("enableAapt2OptimizeFix")
+    .map(String::toBoolean)
+    .orElse(false)
+
+val fixOptimizeFullReleaseResources = tasks.register("fixOptimizeFullReleaseResources", Exec::class) {
+    val shrunkResources = layout.buildDirectory.file(
+        "intermediates/shrunk_resources_binary_format/fullRelease/" +
+            "convertShrunkResourcesToBinaryFullRelease/shrunk-resources-binary-format-full-release.ap_"
+    )
+    val optimizedResources = layout.buildDirectory.file(
+        "intermediates/optimized_processed_res/fullRelease/" +
+            "optimizeFullReleaseResources/resources-full-release-optimize.ap_"
+    )
+    val aapt2Executable = providers.gradleProperty("android.aapt2FromMavenOverride")
+        .orElse(providers.environmentVariable("AAPT2"))
+        .orElse("aapt2")
+
+    inputs.file(shrunkResources)
+    outputs.file(optimizedResources)
+    dependsOn("convertShrunkResourcesToBinaryFullRelease")
+    mustRunAfter("optimizeFullReleaseResources")
+
+    onlyIf {
+        enableAapt2OptimizeFix.get() && shrunkResources.get().asFile.exists()
+    }
+
+    doFirst {
+        optimizedResources.get().asFile.parentFile.mkdirs()
+    }
+
+    commandLine(
+        aapt2Executable.get(),
+        "optimize",
+        "-o",
+        optimizedResources.get().asFile.absolutePath,
+        shrunkResources.get().asFile.absolutePath
+    )
+}
+
+tasks.matching { it.name == "packageFullRelease" }.configureEach {
+    dependsOn(fixOptimizeFullReleaseResources)
+}
+
 tasks.withType<Test>().configureEach {
     android.sourceSets["main"].res.srcDir("src/test/res")
     if (name.contains("ScreenshotTest")) {
