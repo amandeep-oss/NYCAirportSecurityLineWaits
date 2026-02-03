@@ -131,11 +131,10 @@ licensee {
 }
 
 // Termux-specific: Work around optimizeFullReleaseResources not emitting an .ap_ on some Termux setups.
-val enableAapt2OptimizeFix = providers.gradleProperty("enableAapt2OptimizeFix")
-    .map(String::toBoolean)
-    .orElse(false)
-
 val fixOptimizeFullReleaseResources = tasks.register("fixOptimizeFullReleaseResources", Exec::class) {
+    val enableAapt2OptimizeFix = providers.gradleProperty("enableAapt2OptimizeFix")
+        .map(String::toBoolean)
+        .orElse(false)
     val shrunkResources = layout.buildDirectory.file(
         "intermediates/shrunk_resources_binary_format/fullRelease/" +
             "convertShrunkResourcesToBinaryFullRelease/shrunk-resources-binary-format-full-release.ap_"
@@ -152,12 +151,15 @@ val fixOptimizeFullReleaseResources = tasks.register("fixOptimizeFullReleaseReso
     outputs.file(optimizedResources)
     dependsOn("convertShrunkResourcesToBinaryFullRelease")
     mustRunAfter("optimizeFullReleaseResources")
-
-    onlyIf {
-        enableAapt2OptimizeFix.get() && shrunkResources.get().asFile.exists()
-    }
+    enabled = enableAapt2OptimizeFix.get()
 
     doFirst {
+        val shrunkFile = shrunkResources.get().asFile
+        if (!shrunkFile.exists()) {
+            throw org.gradle.api.tasks.StopExecutionException(
+                "Shrunk resources not found; skipping Termux aapt2 optimize fix."
+            )
+        }
         optimizedResources.get().asFile.parentFile.mkdirs()
     }
 
