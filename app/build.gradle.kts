@@ -93,10 +93,10 @@ kotlin {
 dependencies {
     implementation(AndroidX.activity.compose)
     implementation(AndroidX.constraintLayout.compose)
-    implementation(AndroidX.compose.material3)
-    implementation(AndroidX.compose.material3.windowSizeClass)
-    implementation(AndroidX.compose.material)
-    implementation(AndroidX.compose.ui)
+    implementation("androidx.compose.material3:material3:_")
+    implementation("androidx.compose.material3:material3-window-size-class:_")
+    implementation("androidx.compose.material:material:_")
+    implementation("androidx.compose.ui:ui:_")
     implementation(AndroidX.core.ktx)
     implementation(AndroidX.core.splashscreen)
     implementation(AndroidX.lifecycle.runtime.compose)
@@ -104,7 +104,7 @@ dependencies {
     implementation(AndroidX.lifecycle.viewModelKtx)
     implementation(AndroidX.navigation.compose)
     implementation(KotlinX.collections.immutable)
-    implementation(AndroidX.compose.material.icons.extended)
+    implementation("androidx.compose.material:material-icons-extended:_")
 
     implementation(Square.moshi.adapters)
     implementation(Square.moshi)
@@ -115,9 +115,9 @@ dependencies {
     implementation("com.github.ajalt:timberkt:_")
     implementation(JakeWharton.timber)
 
-    implementation(AndroidX.compose.ui.tooling)
-    debugImplementation(AndroidX.compose.ui.toolingPreview)
-    add("screenshotTestImplementation", AndroidX.compose.ui.tooling)
+    implementation("androidx.compose.ui:ui-tooling:_")
+    debugImplementation("androidx.compose.ui:ui-tooling-preview:_")
+    add("screenshotTestImplementation", "androidx.compose.ui:ui-tooling:_")
     add("screenshotTestImplementation", "com.android.tools.screenshot:screenshot-validation-api:_")
 
     testImplementation("junit:junit:_")

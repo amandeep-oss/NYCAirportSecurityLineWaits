@@ -26,16 +26,17 @@ interface AirportApiService {
         private const val API_PATH = "https://avi-prod-mpp-webapp-api.azurewebsites.net/api/v1/"
 
         val INSTANCE: AirportApiService by lazy {
-            Retrofit.Builder()
+            Retrofit
+                .Builder()
                 .baseUrl(API_PATH)
                 .addConverterFactory(
                     MoshiConverterFactory.create(
-                        Moshi.Builder()
+                        Moshi
+                            .Builder()
                             .add(Date::class.java, DateAdapter())
                             .build(),
                     ),
-                )
-                .build()
+                ).build()
                 .create(AirportApiService::class.java)
         }
     }
@@ -55,11 +56,7 @@ private class DateAdapter : JsonAdapter<Date>() {
     }
 }
 
-enum class AirportCode(
-    val shortCode: String,
-    val shortName: String,
-    val fullName: String,
-) {
+enum class AirportCode(val shortCode: String, val shortName: String, val fullName: String) {
     EWR("EWR", "Newark", "Newark Liberty International Airport"),
     JFK("JFK", "Kennedy", "John F. Kennedy International Airport"),
     LGA("LGA", "LaGuardia", "LaGuardia Airport"),

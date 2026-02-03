@@ -6,30 +6,30 @@ import ca.amandeep.nycairportsecuritylinewaits.ui.preview.MarketingJfkPreview
 import ca.amandeep.nycairportsecuritylinewaits.ui.preview.MarketingLgaPreview
 import ca.amandeep.nycairportsecuritylinewaits.ui.preview.MarketingSelectionPreview
 import ca.amandeep.nycairportsecuritylinewaits.ui.preview.MarketingSelectionSingleThemePreview
-import ca.amandeep.nycairportsecuritylinewaits.ui.preview.Pixel9DayNightPreview
+import ca.amandeep.nycairportsecuritylinewaits.ui.preview.PreviewPixel9DayNight
 import com.android.tools.screenshot.PreviewTest
 
 @PreviewTest
-@Pixel9DayNightPreview
+@PreviewPixel9DayNight
 @Composable
-fun AirportSelectionScreenshot() = MarketingSelectionPreview()
+private fun AirportSelectionScreenshot() = MarketingSelectionPreview()
 
 @PreviewTest
-@Pixel9DayNightPreview
+@PreviewPixel9DayNight
 @Composable
-fun AirportSelectionSingleThemeScreenshot() = MarketingSelectionSingleThemePreview(darkTheme = false)
+private fun AirportSelectionSingleThemeScreenshot() = MarketingSelectionSingleThemePreview(darkTheme = false)
 
 @PreviewTest
-@Pixel9DayNightPreview
+@PreviewPixel9DayNight
 @Composable
-fun AirportEwrScreenshot() = MarketingEwrPreview()
+private fun AirportEwrScreenshot() = MarketingEwrPreview()
 
 @PreviewTest
-@Pixel9DayNightPreview
+@PreviewPixel9DayNight
 @Composable
-fun AirportJfkScreenshot() = MarketingJfkPreview()
+private fun AirportJfkScreenshot() = MarketingJfkPreview()
 
 @PreviewTest
-@Pixel9DayNightPreview
+@PreviewPixel9DayNight
 @Composable
-fun AirportLgaScreenshot() = MarketingLgaPreview()
+private fun AirportLgaScreenshot() = MarketingLgaPreview()

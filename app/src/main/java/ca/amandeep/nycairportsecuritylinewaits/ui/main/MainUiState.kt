@@ -7,11 +7,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 
 sealed interface MainUiState {
-    data class Valid(
-        val lastUpdated: Long,
-        val airport: Airport,
-        val hasError: Boolean = false,
-    ) : MainUiState
+    data class Valid(val lastUpdated: Long, val airport: Airport, val hasError: Boolean = false) : MainUiState
 
     data object Error : MainUiState
 
@@ -23,10 +19,7 @@ data class Airport(
         persistentListOf(),
 )
 
-data class Queues(
-    val general: Queue,
-    val preCheck: Queue?,
-) {
+data class Queues(val general: Queue, val preCheck: Queue?) {
     constructor(queues: List<Queue>) : this(
         general = queues.find { it.queueType == QueueType.Reg }!!,
         preCheck = queues.find { it.queueType == QueueType.TSAPre },

@@ -42,7 +42,7 @@ internal fun SyntheticStatusBar(
                     .fillMaxSize()
                     .padding(
                         horizontal = StatusBarHorizontalPadding,
-                        vertical = StatusBarVerticalPadding
+                        vertical = StatusBarVerticalPadding,
                     ),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,

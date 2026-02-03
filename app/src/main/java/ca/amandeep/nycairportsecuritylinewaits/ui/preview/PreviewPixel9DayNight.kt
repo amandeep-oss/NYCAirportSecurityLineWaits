@@ -15,4 +15,4 @@ private const val PIXEL_9_DEVICE = "spec:shape=Normal,width=1080,height=2424,uni
     device = PIXEL_9_DEVICE,
     uiMode = Configuration.UI_MODE_NIGHT_YES,
 )
-annotation class Pixel9DayNightPreview
+annotation class PreviewPixel9DayNight

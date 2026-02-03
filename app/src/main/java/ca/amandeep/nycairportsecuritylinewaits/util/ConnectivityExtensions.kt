@@ -16,7 +16,8 @@ fun Context.observeConnectivity() = callbackFlow {
 
     val callback = networkCallback { connectionState -> trySend(connectionState) }
 
-    val networkRequest = NetworkRequest.Builder()
+    val networkRequest = NetworkRequest
+        .Builder()
         .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
         .build()
 
@@ -28,8 +29,10 @@ fun Context.observeConnectivity() = callbackFlow {
     }
 }
 
-private fun networkCallback(callback: (ConnectionState) -> Unit): ConnectivityManager.NetworkCallback {
-    return object : ConnectivityManager.NetworkCallback() {
+private fun networkCallback(
+    callback: (ConnectionState) -> Unit,
+): ConnectivityManager.NetworkCallback =
+    object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {
             callback(ConnectionState.Available)
         }
@@ -38,7 +41,6 @@ private fun networkCallback(callback: (ConnectionState) -> Unit): ConnectivityMa
             callback(ConnectionState.Unavailable)
         }
     }
-}
 
 sealed class ConnectionState {
     data object Available : ConnectionState()
@@ -54,11 +56,16 @@ private fun ConnectivityManager.getCurrentConnectivityState(): ConnectionState =
     getNetworkCapabilities(activeNetwork)
         ?.let { actNetwork ->
             when {
-                actNetwork.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ->
+                actNetwork.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> {
                     ConnectionState.Available
-                actNetwork.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ->
+                }
+
+                actNetwork.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> {
                     ConnectionState.Available
-                else ->
+                }
+
+                else -> {
                     ConnectionState.Unavailable
+                }
             }
         } ?: ConnectionState.Unavailable

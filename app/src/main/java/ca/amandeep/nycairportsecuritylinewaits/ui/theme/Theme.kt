@@ -1,7 +1,6 @@
 package ca.amandeep.nycairportsecuritylinewaits.ui.theme
 
 import android.app.Activity
-import android.content.res.Configuration
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.Card
@@ -15,12 +14,11 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.TextStyle
@@ -32,7 +30,8 @@ private val DarkColorScheme = darkColorScheme()
 
 private val LightColorScheme = lightColorScheme()
 
-val LocalIsDarkTheme = staticCompositionLocalOf { false }
+@Composable
+fun isAppInDarkTheme(): Boolean = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
 @Composable
 fun NYCAirportSecurityLineWaitsTheme(
@@ -46,8 +45,14 @@ fun NYCAirportSecurityLineWaitsTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+
+        darkTheme -> {
+            DarkColorScheme
+        }
+
+        else -> {
+            LightColorScheme
+        }
     }
     val view = LocalView.current
     if (!view.isInEditMode) {
@@ -58,30 +63,28 @@ fun NYCAirportSecurityLineWaitsTheme(
         }
     }
 
-    CompositionLocalProvider(LocalIsDarkTheme provides darkTheme) {
-        MaterialTheme(
-            colorScheme = colorScheme,
-            typography = Typography,
+    MaterialTheme(
+        colorScheme = colorScheme,
+        typography = Typography,
+    ) {
+        androidx.compose.material.MaterialTheme(
+            colors = androidx.compose.material.MaterialTheme.colors.copy(
+                primary = colorScheme.primary,
+                primaryVariant = colorScheme.primary,
+                secondary = colorScheme.secondary,
+                secondaryVariant = colorScheme.secondary,
+                background = colorScheme.background,
+                surface = colorScheme.surface,
+                error = colorScheme.error,
+                onPrimary = colorScheme.onPrimary,
+                onSecondary = colorScheme.onSecondary,
+                onBackground = colorScheme.onBackground,
+                onSurface = colorScheme.onSurface,
+                onError = colorScheme.onError,
+                isLight = !darkTheme,
+            ),
         ) {
-            androidx.compose.material.MaterialTheme(
-                colors = androidx.compose.material.MaterialTheme.colors.copy(
-                    primary = colorScheme.primary,
-                    primaryVariant = colorScheme.primary,
-                    secondary = colorScheme.secondary,
-                    secondaryVariant = colorScheme.secondary,
-                    background = colorScheme.background,
-                    surface = colorScheme.surface,
-                    error = colorScheme.error,
-                    onPrimary = colorScheme.onPrimary,
-                    onSecondary = colorScheme.onSecondary,
-                    onBackground = colorScheme.onBackground,
-                    onSurface = colorScheme.onSurface,
-                    onError = colorScheme.onError,
-                    isLight = !darkTheme,
-                ),
-            ) {
-                content()
-            }
+            content()
         }
     }
 }
@@ -92,11 +95,12 @@ fun Card3(
     elevation: Dp = 1.dp,
     content: @Composable () -> Unit,
 ) {
+    val isDarkTheme = isAppInDarkTheme()
     Card(
         modifier = modifier,
         elevation = elevation,
         backgroundColor =
-            if (LocalIsDarkTheme.current) {
+            if (isDarkTheme) {
                 MaterialTheme.colorScheme.surface
             } else {
                 lerp(

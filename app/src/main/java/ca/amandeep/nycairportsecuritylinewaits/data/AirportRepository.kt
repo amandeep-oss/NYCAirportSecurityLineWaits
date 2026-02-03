@@ -25,13 +25,13 @@ class AirportRepository(
             tickFlow(networkUpdateInterval).onEach { d { "tick for $airportCode" } },
             refreshAirportFlow.filter { it == airportCode }.onEach { d { "refresh $it" } }.map {},
         ).map {
-            airportRemoteDataSource.getWaitTimes(airportCode.shortCode)
+            airportRemoteDataSource
+                .getWaitTimes(airportCode.shortCode)
                 .let {
                     Result(Result.Metadata(System.currentTimeMillis()), it).also {
                         d { "new wallTime: ${it.metadata.lastUpdated}" }
                     }
-                }
-                .also {
+                }.also {
                     airportsCache[airportCode] = it
                 }
         }.onStart {
@@ -46,12 +46,7 @@ class AirportRepository(
 
     suspend fun refresh(airportCode: AirportCode) = refreshAirportFlow.emit(airportCode)
 
-    data class Result(
-        val metadata: Metadata,
-        val queues: List<Queue>,
-    ) {
-        data class Metadata(
-            val lastUpdated: Long,
-        )
+    data class Result(val metadata: Metadata, val queues: List<Queue>) {
+        data class Metadata(val lastUpdated: Long)
     }
 }

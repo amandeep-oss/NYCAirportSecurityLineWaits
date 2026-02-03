@@ -59,6 +59,7 @@ fun ErrorScreen(
                     textAlign = TextAlign.Center,
                 )
             }
+
             ConnectionState.Available -> {
                 Text(
                     stringResource(R.string.couldnt_load_lines),

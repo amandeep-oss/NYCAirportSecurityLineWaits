@@ -19,8 +19,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -39,7 +39,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -76,8 +75,8 @@ import ca.amandeep.nycairportsecuritylinewaits.R
 import ca.amandeep.nycairportsecuritylinewaits.data.AirportCode
 import ca.amandeep.nycairportsecuritylinewaits.ui.AirportScreen
 import ca.amandeep.nycairportsecuritylinewaits.ui.ErrorScreen
-import ca.amandeep.nycairportsecuritylinewaits.ui.theme.LocalIsDarkTheme
 import ca.amandeep.nycairportsecuritylinewaits.ui.theme.NYCAirportSecurityLineWaitsTheme
+import ca.amandeep.nycairportsecuritylinewaits.ui.theme.isAppInDarkTheme
 import ca.amandeep.nycairportsecuritylinewaits.ui.theme.surfaceColorAtElevation
 import ca.amandeep.nycairportsecuritylinewaits.util.ConnectionState
 import ca.amandeep.nycairportsecuritylinewaits.util.observeConnectivity
@@ -95,10 +94,11 @@ fun MainScreen(
     var titleAirportCode by remember { mutableStateOf<AirportCode?>(null) }
     val navController = rememberNavController()
     val colorScheme = MaterialTheme.colorScheme
+    val isDarkTheme = isAppInDarkTheme()
     val backgroundColor = if (titleAirportCode == null) {
         colorScheme.surface
     } else {
-        if (LocalIsDarkTheme.current) colorScheme.surface else colorScheme.surfaceVariant
+        if (isDarkTheme) colorScheme.surface else colorScheme.surfaceVariant
     }
     Scaffold(
         modifier = modifier,
@@ -216,7 +216,8 @@ private fun MainScreenContent(
     modifier: Modifier = Modifier,
     forceUpdate: () -> Unit,
 ) {
-    val connectivityState by LocalContext.current.observeConnectivity()
+    val connectivityState by LocalContext.current
+        .observeConnectivity()
         .collectAsStateWithLifecycle(initialValue = ConnectionState.Available)
 
     if (uiState == MainUiState.Error) {
@@ -232,6 +233,7 @@ private fun MainScreenContent(
         ) { isLoading ->
             when (isLoading) {
                 true -> LoadingScreen(modifier = modifier)
+
                 false -> AirportScreen(
                     modifier = modifier,
                     uiState = uiState as MainUiState.Valid,

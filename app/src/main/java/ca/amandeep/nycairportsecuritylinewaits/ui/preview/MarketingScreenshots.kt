@@ -4,15 +4,14 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.movableContentOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Path
@@ -44,9 +43,11 @@ fun MarketingSelectionPreview() {
 @Composable
 fun MarketingSelectionSingleThemePreview(
     darkTheme: Boolean,
+    modifier: Modifier = Modifier,
 ) {
     MarketingScaffold(
         darkTheme = darkTheme,
+        modifier = modifier,
         titleAirportCode = null,
     ) { padding ->
         Selection(
@@ -170,8 +171,9 @@ private fun MarketingAirportPreview(
 
 @Composable
 private fun MarketingScaffold(
-    darkTheme: Boolean = isSystemInDarkTheme(),
     titleAirportCode: AirportCode?,
+    modifier: Modifier = Modifier,
+    darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable (PaddingValues) -> Unit,
 ) {
     NYCAirportSecurityLineWaitsTheme(
@@ -179,7 +181,7 @@ private fun MarketingScaffold(
         dynamicColor = false,
     ) {
         Surface(
-            modifier = Modifier.fillMaxSize(),
+            modifier = modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background,
         ) {
             Column(
@@ -208,20 +210,25 @@ private fun MarketingScaffold(
 private fun DiagonalSplitDeviceScreenshot(
     content: @Composable (Boolean) -> Unit,
 ) {
+    val slot = remember(content) {
+        movableContentOf { isDarkTheme: Boolean ->
+            content(isDarkTheme)
+        }
+    }
     Box(modifier = Modifier.fillMaxSize()) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .diagonalClip(clipTopRight = true),
         ) {
-            content(isSystemInDarkTheme())
+            slot(isSystemInDarkTheme())
         }
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .diagonalClip(clipTopRight = false),
         ) {
-            content(!isSystemInDarkTheme())
+            slot(!isSystemInDarkTheme())
         }
     }
 }

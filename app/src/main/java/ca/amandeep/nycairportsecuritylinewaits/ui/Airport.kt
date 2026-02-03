@@ -23,9 +23,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material3.Card
@@ -74,8 +74,8 @@ import ca.amandeep.nycairportsecuritylinewaits.data.model.Terminal
 import ca.amandeep.nycairportsecuritylinewaits.ui.main.Airport
 import ca.amandeep.nycairportsecuritylinewaits.ui.main.MainUiState
 import ca.amandeep.nycairportsecuritylinewaits.ui.main.Queues
-import ca.amandeep.nycairportsecuritylinewaits.ui.theme.LocalIsDarkTheme
 import ca.amandeep.nycairportsecuritylinewaits.ui.theme.NYCAirportSecurityLineWaitsTheme
+import ca.amandeep.nycairportsecuritylinewaits.ui.theme.isAppInDarkTheme
 import ca.amandeep.nycairportsecuritylinewaits.ui.theme.surfaceColorAtElevation
 import ca.amandeep.nycairportsecuritylinewaits.util.ConnectionState
 import kotlinx.collections.immutable.ImmutableList
@@ -152,6 +152,7 @@ private fun LoadedAirportCard(
     gates: ImmutableList<Pair<String, Queues>>,
     terminal: Terminal,
 ) {
+    val isDarkTheme = isAppInDarkTheme()
     val labelStyle = MaterialTheme.typography.labelSmall.copy(
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         fontWeight = FontWeight.SemiBold,
@@ -174,13 +175,14 @@ private fun LoadedAirportCard(
                     terminal.identifier,
                     modifier = Modifier
                         .let { m ->
-                            val whiteBorder = if (LocalIsDarkTheme.current) {
+                            val whiteBorder = if (isDarkTheme) {
                                 LocalContentColor.current
                             } else {
                                 OFFWHITE_BORDER
                             }
                             when (terminal) {
                                 Terminal.EWR_A -> m.roundedTerminalHeader(TERMINAL_RED, whiteBorder)
+
                                 Terminal.EWR_B -> m.roundedTerminalHeader(
                                     TERMINAL_BLUE,
                                     whiteBorder,
@@ -198,6 +200,7 @@ private fun LoadedAirportCard(
                                 )
 
                                 Terminal.JFK_4 -> m.squareTerminalHeader(TERMINAL_BLUE, whiteBorder)
+
                                 Terminal.JFK_5 -> m.squareTerminalHeader(
                                     TERMINAL_YELLOW,
                                     Color.Black,
@@ -214,10 +217,10 @@ private fun LoadedAirportCard(
                                 )
 
                                 Terminal.LGA_A -> m.squareTerminalHeader(TERMINAL_BLUE, whiteBorder)
+
                                 Terminal.SWF_MAIN -> m
                             }
-                        }
-                        .badgeLayout(
+                        }.badgeLayout(
                             offsetX = if (terminal == Terminal.EWR_B) 3.dp.value.toInt() else 0,
                         ),
                     fontSize = when (terminal) {
@@ -230,7 +233,7 @@ private fun LoadedAirportCard(
                         Terminal.LGA_D,
                         -> Color.Black
 
-                        else -> if (LocalIsDarkTheme.current) LocalContentColor.current else Color.White
+                        else -> if (isDarkTheme) LocalContentColor.current else Color.White
                     },
                     fontWeight = if (terminal == Terminal.EWR_B) FontWeight.SemiBold else FontWeight.Black,
                 )
@@ -381,7 +384,15 @@ private fun LoadedAirportCard(
                             .alpha(if (queues.bothClosed) CLOSED_ALPHA else 1f),
                         style = MaterialTheme.typography.bodySmall,
                     )
-                    QueuesMins(i, queues, showEmptyPrecheckInGrid = true)
+                    GeneralQueueCell(
+                        queues = queues,
+                        modifier = Modifier.layoutId(GeneralId(i)),
+                    )
+                    PrecheckQueueCell(
+                        queues = queues,
+                        showEmpty = true,
+                        modifier = Modifier.layoutId(PreId(i)),
+                    )
                 }
             }
         }
@@ -553,8 +564,7 @@ private fun Modifier.squareTerminalHeader(backgroundColor: Color, foregroundColo
         .background(
             shape = RectangleShape,
             color = backgroundColor,
-        )
-        .border(
+        ).border(
             0.5.dp,
             shape = RectangleShape,
             color = foregroundColor,
@@ -579,36 +589,6 @@ private fun ConstraintLayoutBaseScope.createEndBarrier(
 ) = createEndBarrier(*elements.toTypedArray(), margin = margin)
 
 @Composable
-private fun QueuesMins(
-    i: Int,
-    queues: Queues,
-    showEmptyPrecheckInGrid: Boolean,
-) {
-    if (queues.general.queueOpen) {
-        Time(
-            targetTime = queues.general.timeInMinutes,
-            modifier = Modifier.layoutId(GeneralId(i)),
-        )
-    } else {
-        ClosedLabel(
-            modifier = Modifier.layoutId(GeneralId(i)),
-            alpha = if (queues.bothClosed) CLOSED_ALPHA else 1f,
-        )
-    }
-    if (queues.preCheck?.queueOpen == true) {
-        Time(
-            targetTime = queues.preCheck.timeInMinutes,
-            modifier = Modifier.layoutId(PreId(i)),
-        )
-    } else if (showEmptyPrecheckInGrid) {
-        Time(
-            targetTime = -1,
-            modifier = Modifier.layoutId(PreId(i)),
-        )
-    }
-}
-
-@Composable
 private fun ClosedLabel(
     modifier: Modifier = Modifier,
     alpha: Float = 1f,
@@ -623,6 +603,47 @@ private fun ClosedLabel(
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         maxLines = 1,
     )
+}
+
+@Composable
+private fun GeneralQueueCell(
+    queues: Queues,
+    modifier: Modifier = Modifier,
+) {
+    if (queues.general.queueOpen) {
+        Time(
+            targetTime = queues.general.timeInMinutes,
+            modifier = modifier,
+        )
+    } else {
+        ClosedLabel(
+            modifier = modifier,
+            alpha = if (queues.bothClosed) CLOSED_ALPHA else 1f,
+        )
+    }
+}
+
+@Composable
+private fun PrecheckQueueCell(
+    queues: Queues,
+    showEmpty: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    when {
+        queues.preCheck?.queueOpen == true -> {
+            Time(
+                targetTime = queues.preCheck.timeInMinutes,
+                modifier = modifier,
+            )
+        }
+
+        showEmpty -> {
+            Time(
+                targetTime = -1,
+                modifier = modifier,
+            )
+        }
+    }
 }
 
 @Composable
@@ -668,23 +689,26 @@ private fun Time(
 @Composable
 private fun waitTimeColor(
     time: Int,
-): Color = when {
-    time < 10 -> if (LocalIsDarkTheme.current) {
-        Color(129, 199, 132, 255)
-    } else {
-        Color(56, 142, 60, 255)
-    }
+): Color {
+    val isDarkTheme = isAppInDarkTheme()
+    return when {
+        time < 10 -> if (isDarkTheme) {
+            Color(129, 199, 132, 255)
+        } else {
+            Color(56, 142, 60, 255)
+        }
 
-    time < 25 -> if (LocalIsDarkTheme.current) {
-        Color(255, 241, 118, 255)
-    } else {
-        Color(229, 177, 47, 255)
-    }
+        time < 25 -> if (isDarkTheme) {
+            Color(255, 241, 118, 255)
+        } else {
+            Color(229, 177, 47, 255)
+        }
 
-    else -> if (LocalIsDarkTheme.current) {
-        Color(229, 115, 115, 255)
-    } else {
-        Color(211, 47, 47, 255)
+        else -> if (isDarkTheme) {
+            Color(229, 115, 115, 255)
+        } else {
+            Color(211, 47, 47, 255)
+        }
     }
 }
 

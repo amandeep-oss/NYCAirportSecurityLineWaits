@@ -27,7 +27,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     )
 
     fun getWaitTimes(airportCode: AirportCode): Flow<MainUiState> =
-        airportRepository.getWaitTimes(airportCode)
+        airportRepository
+            .getWaitTimes(airportCode)
             .map { result ->
                 val queues = result.queues
                     .groupBy { it.terminal(airportCode) }
@@ -38,8 +39,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                             .toList()
                             .sortedBy { it.first }
                             .toImmutableList()
-                    }
-                    .toList()
+                    }.toList()
                     .sortedBy { it.first }
                     .toImmutableList()
 
@@ -53,8 +53,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         airport = Airport(queues),
                     )
                 }
-            }
-            .retryWhen { cause, attempt ->
+            }.retryWhen { cause, attempt ->
                 // Retry all errors with a 1 second delay
                 emit(MainUiState.Error)
                 delay(1.seconds)

@@ -53,10 +53,7 @@ enum class QueueType {
     Reg, TSAPre
 }
 
-enum class Terminal(
-    val airportCode: AirportCode,
-    val identifier: String,
-) {
+enum class Terminal(val airportCode: AirportCode, val identifier: String) {
     EWR_A(AirportCode.EWR, "A"),
     EWR_B(AirportCode.EWR, "B"),
     EWR_C(AirportCode.EWR, "C"),
