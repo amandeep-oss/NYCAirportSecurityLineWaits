@@ -1,12 +1,12 @@
 defaults:
   default_color: '#ffffffe6'
-  font: Google Sans
+  font: Google Sans Flex
   color: center
   tolerance: 80
   zero_alpha_threshold: 50
   device_width_ratio: 0.8
   search_root: ../..
-  screenshot_directory: ../../app/src/screenshotTestDebug/reference/ca/amandeep/nycairportsecuritylinewaits/ui/main/MarketingScreenshotsKt
+  screenshot_directory: ../../app/build/outputs/screenshotTest-results/preview/debug/full/rendered/ca/amandeep/nycairportsecuritylinewaits/ui/main/MarketingScreenshotsKt
 jobs:
   - name: airport_selection
     text: Instant <color="#FFA8D3">wait times</color> for all NYC airports.
@@ -19,7 +19,7 @@ jobs:
     output: output/night_and_day.png
     screenshot: AirportSelectionScreenshot_Pixel_9_Night_.*_0\.png
   - name: jfk
-    text: General &                    <color="#FFA8D3">PreCheck</color> lines.
+    text: General & <br><color="#FFA8D3">PreCheck</color> lines.
     device_frame: frame.webp
     output: output/jfk_prefetch.png
     screenshot: AirportJfkScreenshot_Pixel_9_Night_.*_0\.png
