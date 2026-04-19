@@ -13,6 +13,7 @@ apply(plugin = "com.android.compose.screenshot")
 
 android {
     compileSdk = 36
+    compileSdkMinor = 1
 
     defaultConfig {
         applicationId = "ca.amandeep.nycairportsecuritylinewaits"
@@ -114,6 +115,8 @@ dependencies {
 
     implementation("com.github.ajalt:timberkt:_")
     implementation(JakeWharton.timber)
+
+    add("ktlint", "io.nlopez.compose.rules:ktlint:_")
 
     implementation("androidx.compose.ui:ui-tooling:_")
     debugImplementation("androidx.compose.ui:ui-tooling-preview:_")
