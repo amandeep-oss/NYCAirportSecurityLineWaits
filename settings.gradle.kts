@@ -14,6 +14,11 @@ plugins {
 }
 
 refreshVersions {
+    // Material icons have a separate release cycle from Material components.
+    extraArtifactVersionKeyRules("""
+        androidx.compose.material:material-icons-*
+        ^^^^^^^^.^^^^^^^.         ^^^^^^^^^^^^^^
+    """.trimIndent())
     rejectVersionIf {
         candidate.stabilityLevel != StabilityLevel.Stable
     }

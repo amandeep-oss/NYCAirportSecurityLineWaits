@@ -1,6 +1,6 @@
 buildscript {
     dependencies {
-        classpath("com.android.compose.screenshot:com.android.compose.screenshot.gradle.plugin:0.0.1-alpha13")
+        classpath("com.android.compose.screenshot:com.android.compose.screenshot.gradle.plugin:0.0.1-alpha16")
         classpath(CashApp.licenseeGradlePlugin)
     }
 }

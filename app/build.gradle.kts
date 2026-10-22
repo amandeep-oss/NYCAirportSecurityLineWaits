@@ -12,13 +12,12 @@ plugins {
 apply(plugin = "com.android.compose.screenshot")
 
 android {
-    compileSdk = 36
-    compileSdkMinor = 1
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "ca.amandeep.nycairportsecuritylinewaits"
         minSdk = 29
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 1
         versionName = "1.0"
 
