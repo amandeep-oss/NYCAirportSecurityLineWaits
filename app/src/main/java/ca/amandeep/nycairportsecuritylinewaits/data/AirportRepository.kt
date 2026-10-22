@@ -33,8 +33,7 @@ class AirportRepository(
                     if (queues.isEmpty()) {
                         throw IOException("No wait times returned for ${airportCode.shortCode}")
                     }
-                }
-                .let {
+                }.let {
                     Result(Result.Metadata(System.currentTimeMillis()), it).also {
                         d { "new wallTime: ${it.metadata.lastUpdated}" }
                     }
