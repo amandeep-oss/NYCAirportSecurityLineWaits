@@ -51,6 +51,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     MainUiState.Valid(
                         lastUpdated = result.metadata.lastUpdated,
                         airport = Airport(queues),
+                        hasError = result.metadata.hasError,
                     )
                 }
             }.retryWhen { cause, attempt ->

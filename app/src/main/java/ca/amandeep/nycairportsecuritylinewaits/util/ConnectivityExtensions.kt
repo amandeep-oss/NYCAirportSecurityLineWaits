@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
-import android.net.NetworkRequest
 import androidx.core.content.getSystemService
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
@@ -16,12 +15,7 @@ fun Context.observeConnectivity() = callbackFlow {
 
     val callback = networkCallback { connectionState -> trySend(connectionState) }
 
-    val networkRequest = NetworkRequest
-        .Builder()
-        .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-        .build()
-
-    connectivityManager?.registerNetworkCallback(networkRequest, callback)
+    connectivityManager?.registerDefaultNetworkCallback(callback)
     connectivityManager?.getCurrentConnectivityState()?.let(this::trySend)
 
     awaitClose {
@@ -35,6 +29,10 @@ private fun networkCallback(
     object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {
             callback(ConnectionState.Available)
+        }
+
+        override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities) {
+            callback(networkCapabilities.connectionState())
         }
 
         override fun onLost(network: Network) {
@@ -53,19 +51,11 @@ val Context.currentConnectivityState: ConnectionState
         ?: ConnectionState.Unavailable
 
 private fun ConnectivityManager.getCurrentConnectivityState(): ConnectionState =
-    getNetworkCapabilities(activeNetwork)
-        ?.let { actNetwork ->
-            when {
-                actNetwork.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> {
-                    ConnectionState.Available
-                }
+    getNetworkCapabilities(activeNetwork)?.connectionState() ?: ConnectionState.Unavailable
 
-                actNetwork.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> {
-                    ConnectionState.Available
-                }
-
-                else -> {
-                    ConnectionState.Unavailable
-                }
-            }
-        } ?: ConnectionState.Unavailable
+private fun NetworkCapabilities.connectionState(): ConnectionState =
+    if (hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
+        ConnectionState.Available
+    } else {
+        ConnectionState.Unavailable
+    }
