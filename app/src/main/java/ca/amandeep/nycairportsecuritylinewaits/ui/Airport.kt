@@ -81,7 +81,6 @@ import ca.amandeep.nycairportsecuritylinewaits.util.ConnectionState
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import java.util.Date
-import java.util.concurrent.TimeUnit
 
 private const val MIN_OFFSET = 5
 private const val COLUMNS_MARGIN = 8
@@ -108,6 +107,7 @@ fun AirportScreen(
     connectivityState: ConnectionState,
     modifier: Modifier = Modifier,
 ) {
+    val isStale = uiState.hasError || connectivityState == ConnectionState.Unavailable
     LazyColumn(
         modifier = modifier
             .fillMaxSize(),
@@ -119,15 +119,13 @@ fun AirportScreen(
     ) {
         item {
             AnimatedVisibility(
-                visible = uiState.hasError,
+                visible = isStale,
                 enter = expandVertically(),
                 exit = shrinkVertically(),
             ) {
                 ErrorBar(
                     connectivityState = connectivityState,
-                    minsAgo = TimeUnit.MILLISECONDS.toMinutes(
-                        System.currentTimeMillis() - uiState.lastUpdated,
-                    ),
+                    lastUpdated = uiState.lastUpdated,
                 )
             }
         }
@@ -139,7 +137,7 @@ fun AirportScreen(
                 ),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
             ) {
-                LoadedAirportCard(gates, terminal)
+                LoadedAirportCard(gates, terminal, isStale)
             }
         }
     }
@@ -151,6 +149,7 @@ private const val SHOW_TERMINAL_ICONS = false
 private fun LoadedAirportCard(
     gates: ImmutableList<Pair<String, Queues>>,
     terminal: Terminal,
+    isStale: Boolean,
 ) {
     val isDarkTheme = isAppInDarkTheme()
     val labelStyle = MaterialTheme.typography.labelSmall.copy(
@@ -269,6 +268,7 @@ private fun LoadedAirportCard(
                         label = stringResource(R.string.general_line).uppercase(),
                         queue = queues.general,
                         labelStyle = labelStyle,
+                        isStale = isStale,
                         modifier = Modifier.weight(1f),
                     )
                     if (!allPrecheckClosed && queues.preCheck != null) {
@@ -276,6 +276,7 @@ private fun LoadedAirportCard(
                             label = stringResource(R.string.pre_short),
                             queue = queues.preCheck,
                             labelStyle = labelStyle,
+                            isStale = isStale,
                             modifier = Modifier.weight(1f),
                             showCheck = true,
                         )
@@ -386,10 +387,12 @@ private fun LoadedAirportCard(
                     )
                     GeneralQueueCell(
                         queues = queues,
+                        isStale = isStale,
                         modifier = Modifier.layoutId(GeneralId(i)),
                     )
                     PrecheckQueueCell(
                         queues = queues,
+                        isStale = isStale,
                         showEmpty = true,
                         modifier = Modifier.layoutId(PreId(i)),
                     )
@@ -435,6 +438,7 @@ private fun QueueSummary(
     label: String,
     queue: Queue,
     labelStyle: TextStyle,
+    isStale: Boolean,
     modifier: Modifier = Modifier,
     showCheck: Boolean = false,
 ) {
@@ -457,6 +461,7 @@ private fun QueueSummary(
         if (queue.queueOpen) {
             Time(
                 targetTime = queue.timeInMinutes,
+                isStale = isStale,
             )
         } else {
             ClosedLabel(
@@ -608,11 +613,13 @@ private fun ClosedLabel(
 @Composable
 private fun GeneralQueueCell(
     queues: Queues,
+    isStale: Boolean,
     modifier: Modifier = Modifier,
 ) {
     if (queues.general.queueOpen) {
         Time(
             targetTime = queues.general.timeInMinutes,
+            isStale = isStale,
             modifier = modifier,
         )
     } else {
@@ -626,6 +633,7 @@ private fun GeneralQueueCell(
 @Composable
 private fun PrecheckQueueCell(
     queues: Queues,
+    isStale: Boolean,
     showEmpty: Boolean,
     modifier: Modifier = Modifier,
 ) {
@@ -633,6 +641,7 @@ private fun PrecheckQueueCell(
         queues.preCheck?.queueOpen == true -> {
             Time(
                 targetTime = queues.preCheck.timeInMinutes,
+                isStale = isStale,
                 modifier = modifier,
             )
         }
@@ -650,6 +659,7 @@ private fun PrecheckQueueCell(
 private fun Time(
     targetTime: Int,
     modifier: Modifier = Modifier,
+    isStale: Boolean = false,
 ) {
     Crossfade(
         targetState = targetTime,
@@ -660,7 +670,11 @@ private fun Time(
             modifier = Modifier.alpha(if (time < 0) 0f else 1f),
             verticalAlignment = Alignment.Bottom,
         ) {
-            val color = waitTimeColor(time)
+            val color = if (isStale) {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            } else {
+                waitTimeColor(time)
+            }
             Text(
                 time.toString(),
                 modifier = Modifier.alignByBaseline(),

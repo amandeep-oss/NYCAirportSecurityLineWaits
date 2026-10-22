@@ -17,6 +17,7 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -79,6 +80,7 @@ import ca.amandeep.nycairportsecuritylinewaits.ui.theme.NYCAirportSecurityLineWa
 import ca.amandeep.nycairportsecuritylinewaits.ui.theme.isAppInDarkTheme
 import ca.amandeep.nycairportsecuritylinewaits.ui.theme.surfaceColorAtElevation
 import ca.amandeep.nycairportsecuritylinewaits.util.ConnectionState
+import ca.amandeep.nycairportsecuritylinewaits.util.currentConnectivityState
 import ca.amandeep.nycairportsecuritylinewaits.util.observeConnectivity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -86,12 +88,16 @@ import kotlinx.coroutines.flow.Flow
 import kotlin.system.measureTimeMillis
 import kotlin.time.Duration.Companion.milliseconds
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @Composable
 fun MainScreen(
     modifier: Modifier = Modifier,
     mainViewModel: MainViewModel = viewModel(),
 ) {
     var titleAirportCode by remember { mutableStateOf<AirportCode?>(null) }
+    val context = LocalContext.current
+    val connectivityState by remember(context) { context.observeConnectivity() }
+        .collectAsStateWithLifecycle(initialValue = context.currentConnectivityState)
     val navController = rememberNavController()
     val colorScheme = MaterialTheme.colorScheme
     val isDarkTheme = isAppInDarkTheme()
@@ -114,14 +120,9 @@ fun MainScreen(
                 .fillMaxSize()
                 .background(backgroundColor),
         ) {
-            Icon(
-                modifier = Modifier
-                    .size(130.dp)
-                    .alpha(0.15f)
-                    .align(Alignment.BottomCenter),
-                painter = painterResource(id = R.drawable.statue_of_liberty),
-                contentDescription = null,
-            )
+            if (titleAirportCode == null && connectivityState == ConnectionState.Available) {
+                AirportDecoration()
+            }
             NavHost(navController = navController, startDestination = "selection") {
                 slideAnimatedComposable("selection") {
                     // Clear the title when we navigate to the main selection screen
@@ -134,9 +135,10 @@ fun MainScreen(
                 }
                 // Create a details screen for each airport
                 AirportCode.entries.forEach { airportCode ->
-                    val uiStateFlow = mainViewModel.getWaitTimes(airportCode)
-
                     slideAnimatedComposable(airportCode.shortCode) {
+                        val uiStateFlow = remember(mainViewModel, airportCode) {
+                            mainViewModel.getWaitTimes(airportCode)
+                        }
                         // Set the title to the airport when we navigate to the details screen
                         LaunchedEffect(Unit) {
                             titleAirportCode = airportCode
@@ -172,6 +174,7 @@ fun MainScreen(
                         ) {
                             MainScreenContent(
                                 uiState = uiState,
+                                connectivityState = connectivityState,
                                 forceUpdate = forceRefresh,
                             )
                             PullRefreshIndicator(
@@ -209,39 +212,56 @@ private fun setAndComputeLastGoodState(
     return lastGoodState
 }
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @Composable
 private fun MainScreenContent(
     uiState: MainUiState,
+    connectivityState: ConnectionState,
     modifier: Modifier = Modifier,
     forceUpdate: () -> Unit,
 ) {
-    val connectivityState by LocalContext.current
-        .observeConnectivity()
-        .collectAsStateWithLifecycle(initialValue = ConnectionState.Available)
+    Box(modifier.fillMaxSize()) {
+        if (uiState is MainUiState.Valid && !uiState.hasError &&
+            connectivityState == ConnectionState.Available
+        ) {
+            AirportDecoration()
+        }
+        if (uiState == MainUiState.Error ||
+            (connectivityState == ConnectionState.Unavailable && uiState == MainUiState.Loading)
+        ) {
+            ErrorScreen(
+                modifier = Modifier,
+                connectivityState = connectivityState,
+                forceUpdate = forceUpdate,
+            )
+        } else {
+            Crossfade(
+                targetState = uiState == MainUiState.Loading,
+                label = "main crossfade",
+            ) { isLoading ->
+                when (isLoading) {
+                    true -> LoadingScreen()
 
-    if (uiState == MainUiState.Error) {
-        ErrorScreen(
-            modifier = modifier,
-            connectivityState = connectivityState,
-            forceUpdate = forceUpdate,
-        )
-    } else {
-        Crossfade(
-            targetState = uiState == MainUiState.Loading,
-            label = "main crossfade",
-        ) { isLoading ->
-            when (isLoading) {
-                true -> LoadingScreen(modifier = modifier)
-
-                false -> AirportScreen(
-                    modifier = modifier,
-                    uiState = uiState as MainUiState.Valid,
-                    connectivityState = connectivityState,
-                )
+                    false -> AirportScreen(
+                        modifier = Modifier,
+                        uiState = uiState as MainUiState.Valid,
+                        connectivityState = connectivityState,
+                    )
+                }
             }
         }
     }
+}
+
+@Composable
+private fun BoxScope.AirportDecoration() {
+    Icon(
+        modifier = Modifier
+            .size(130.dp)
+            .alpha(0.15f)
+            .align(Alignment.BottomCenter),
+        painter = painterResource(R.drawable.statue_of_liberty),
+        contentDescription = null,
+    )
 }
 
 @Composable
