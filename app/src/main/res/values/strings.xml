@@ -21,22 +21,15 @@
     <string name="closed">Closed</string>
     <string name="min">min</string>
     <string name="mins">mins</string>
-    <string name="error_icon">Error icon</string>
-    <string name="loading_error">An error occurred while loading airport lines info</string>
     <string name="load_error_title">Couldn\'t load wait times</string>
-    <string name="load_error_description">Please try again.</string>
     <string name="refresh_error_status">Couldn\'t refresh</string>
     <string name="offline_title">You\'re offline</string>
-    <string name="offline_description">Wait times will load when you\'re connected.</string>
+    <string name="offline_description">Connect to the internet to load wait times.</string>
     <string name="offline_status">Offline</string>
     <string name="updated_just_now">Updated just now</string>
     <string name="updated_minutes_ago">Updated %1$d min ago</string>
-    <string name="no_internet_connection">No internet connection</string>
-    <string name="last_known_information">, below is the last known information from %1$s mins ago</string>
-    <string name="no_internet_icon">No internet icon</string>
-    <string name="couldnt_load_lines">Couldn\'t load lines info</string>
     <string name="try_again">Try again</string>
-    <string name="loading">Loading …</string>
+    <string name="loading">Loading wait times…</string>
     <string name="back">Back</string>
     <string name="airport_selection_title">WHICH WAY OUT OF THE CITY?</string>
 </resources>

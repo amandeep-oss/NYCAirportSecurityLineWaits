@@ -79,17 +79,16 @@ fun ErrorScreen(
                 color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center,
             )
-            Spacer(Modifier.height(if (compact) 8.dp else 12.dp))
-            Text(
-                text = stringResource(
-                    if (offline) R.string.offline_description else R.string.load_error_description,
-                ),
-                modifier = Modifier.widthIn(max = 300.dp),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-            )
-            if (!offline) {
+            if (offline) {
+                Spacer(Modifier.height(if (compact) 8.dp else 12.dp))
+                Text(
+                    text = stringResource(R.string.offline_description),
+                    modifier = Modifier.widthIn(max = 300.dp),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                )
+            } else {
                 Spacer(Modifier.height(if (compact) 12.dp else 24.dp))
                 Button(
                     onClick = forceUpdate,
